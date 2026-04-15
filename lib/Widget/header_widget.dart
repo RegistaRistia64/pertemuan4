@@ -56,9 +56,9 @@ class HeaderWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: .start,
               children: [
-                Text("level.toString()",
+                Text("Regista Ristia Maulina",
                 style: TextStyle(
-                  color: Colors.brown,
+                  color: const Color.fromARGB(255, 0, 0, 0),
                   fontSize: 24,
                   fontWeight: FontWeight.bold
                 ),
