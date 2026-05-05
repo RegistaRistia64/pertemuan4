@@ -2,56 +2,134 @@ import 'package:flutter/material.dart';
 import 'package:regista2306157p4/Widget/chip_widget.dart';
 import 'package:regista2306157p4/Widget/header_widget.dart';
 import 'package:regista2306157p4/Widget/quest_widget.dart';
+import 'package:regista2306157p4/models/quest.dart';
+import 'package:regista2306157p4/pages/login_page.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  final List<Quest> questList = const [
-    Quest(title: "Memburu Rusa", reward: "100+ Gold"),
-    Quest(title: "Mengumpulkan Kayu", reward: "50 Gold", icon: Icons.forest),
-    Quest(title: "Kalahkan Naga", reward: "500+ Gold", icon: Icons.local_fire_department),
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final List<Quest> questList = [
+    Quest(
+      title: "Memburu Rusa Merah",
+      rank: "E",
+      reward: "100 Gold, 10 Exp",
+      desc: "Rusa merah terlihat di dekat hutan utara. Bawa culanya kemari.",
+      imagePath: "https://picsum.photos/seed/deer/400/200",
+    ),
+    Quest(
+      title: "Mengumpulkan Serpihan Bintang",
+      rank: "B",
+      reward: "500 Gold, 100 Exp",
+      desc: "Bintang jatuh di danau terlarang. Ambil serpihannya tanpa membangunkan naga.",
+      imagePath: "https://picsum.photos/seed/star/400/200",
+      icon: Icons.star,
+    ),
+    Quest(
+      title: "Kalahkan Naga Kegelapan",
+      rank: "SS",
+      reward: "5000 Gold, Gelar",
+      desc: "Naga legendaris telah bangun. Jangan mati.",
+      imagePath: "https://picsum.photos/seed/dragon/400/200",
+      icon: Icons.local_fire_department,
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Adventure Game',
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Adventure Game",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          backgroundColor: Colors.pinkAccent,
+      debugShowCheckedModeBanner: false,
+      initialRoute: "/",
+      onGenerateRoute: (datas) {
+        if (datas.name == "/") {
+          if (datas.arguments == null || datas.arguments is! Map) {
+            return MaterialPageRoute(builder: (context) => const LoginPage());
+          }
+
+          final args = Map<String, dynamic>.from(datas.arguments as Map);
+          return MaterialPageRoute(
+            builder: (context) => Homepage(
+              userData: args,
+              questList: questList,
+              onQuestToggle: (int index) {
+                setState(() {
+                  questList[index].isTaken = true;
+                });
+              },
+            ),
+          );
+        }
+        return null;
+      },
+    );
+  }
+}
+
+class Homepage extends StatefulWidget {
+  final Map<String, dynamic> userData;
+  final List<Quest> questList;
+  final Function(int) onQuestToggle;
+
+  const Homepage({
+    super.key,
+    required this.userData,
+    required this.questList,
+    required this.onQuestToggle,
+  });
+
+  @override
+  State<Homepage> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  @override
+  Widget build(BuildContext context) {
+    final String name = widget.userData["name"] ?? "Unknown";
+    final String level = widget.userData["level"] ?? "1";
+    final String role = widget.userData["job"] ?? "Novice";
+    final String rank = widget.userData["rank"] ?? "F";
+
+    return Scaffold(
+      backgroundColor: Colors.pink[50],
+      appBar: AppBar(
+        title: const Text(
+          "Papan Misi Guild",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              HeaderWidget(
-                name: "Level999",
-                role: "Role Saya",
-                imageUrl: "https://picsum.photos/seed/picsum/200/300",
-              ),
-              const SizedBox(height: 12),
-              Row(
-                spacing: 8,
-                children: [
-                  ChipWidget(color: Colors.pinkAccent, icon: Icons.favorite, label: "Health", value: 80),
-                  ChipWidget(color: Colors.blueAccent, icon: Icons.favorite, label: "Heart", value: 80),
-                  ChipWidget(color: Colors.amberAccent, icon: Icons.favorite, label: "Shield", value: 80),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Text("Quest list"),
-              const SizedBox(height: 8),
-              QuestListWidget(quests: questList),
-            ],
-          ),
+        backgroundColor: Colors.pinkAccent,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            HeaderWidget(
+              name: name,
+              level: level,
+              role: role,
+              imageUrl: "https://picsum.photos/seed/adventurer/200/300",
+              rank: rank,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Daftar Quest Tersedia",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent),
+            ),
+            const SizedBox(height: 12),
+            QuestListWidget(
+              quests: widget.questList,
+              onQuestToggle: widget.onQuestToggle,
+            ),
+          ],
         ),
       ),
     );
